@@ -9,8 +9,6 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
-      - key: PORT
-        value: "3001"
       - key: CLIENT_URL
         value: https://stockflow-client.onrender.com
       - key: JWT_SECRET
@@ -24,12 +22,10 @@ services:
     env: node
     region: oregon
     plan: free
-    buildCommand: cd StockFlow/client && npm install && npm run build && cp -r .next/static .next/standalone/.next/static
-    startCommand: cd StockFlow/client && node .next/standalone/server.js
+    buildCommand: cd StockFlow/client && npm install && npm run build
+    startCommand: cd StockFlow/client && npx next start -p $PORT
     envVars:
       - key: NODE_ENV
         value: production
-      - key: PORT
-        value: "3000"
       - key: NEXT_PUBLIC_API_URL
         value: https://stockflow-api.onrender.com/api
