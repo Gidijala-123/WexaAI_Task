@@ -1,0 +1,35 @@
+services:
+  - type: web
+    name: stockflow-api
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: cd server && npm install && npx prisma db push
+    startCommand: cd server && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "3001"
+      - key: CLIENT_URL
+        value: https://stockflow-client.onrender.com
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        value: "file:./dev.db"
+    healthCheckPath: /api/health
+
+  - type: web
+    name: stockflow-client
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: cd client && npm install && npm run build
+    startCommand: cd client && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "3000"
+      - key: NEXT_PUBLIC_API_URL
+        value: https://stockflow-api.onrender.com/api
