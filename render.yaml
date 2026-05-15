@@ -24,8 +24,8 @@ services:
     env: node
     region: oregon
     plan: free
-    buildCommand: cd StockFlow/client && npm install && npm run build
-    startCommand: cd StockFlow/client && npm start
+    buildCommand: cd StockFlow/client && npm install && npm run build && cp -r .next/static .next/standalone/.next/static
+    startCommand: cd StockFlow/client && node .next/standalone/server.js
     envVars:
       - key: NODE_ENV
         value: production
