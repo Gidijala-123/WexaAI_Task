@@ -126,10 +126,10 @@ export default function DashboardPage() {
               <table className="min-w-full divide-y divide-gray-100">
                 <thead>
                   <tr>
-                    <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider pb-3">Product</th>
-                    <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider pb-3">SKU</th>
-                    <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider pb-3">On Hand</th>
-                    <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider pb-3">Threshold</th>
+                    <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider pb-3 pr-2">Product</th>
+                    <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider pb-3 pr-2 hidden sm:table-cell">SKU</th>
+                    <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider pb-3 pr-2 whitespace-nowrap">On Hand</th>
+                    <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider pb-3 pr-2">Threshold</th>
                     <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider pb-3">Status</th>
                   </tr>
                 </thead>
@@ -140,11 +140,11 @@ export default function DashboardPage() {
                     const badgeText = ratio <= 0.5 ? 'Critical' : 'Low'
                     return (
                       <tr key={item.id} className="hover:bg-gray-50 transition-colors">
-                        <td className="py-3.5 text-sm font-medium text-gray-900">{item.name}</td>
-                        <td className="py-3.5 text-sm text-gray-500">{item.sku}</td>
-                        <td className="py-3.5 text-sm font-semibold text-red-600">{item.quantityOnHand}</td>
-                        <td className="py-3.5 text-sm text-gray-500">{item.threshold}</td>
-                        <td className="py-3.5"><span className={badgeClass}>{badgeText}</span></td>
+                        <td className="py-3.5 pr-2 text-sm font-medium text-gray-900">{item.name}</td>
+                        <td className="py-3.5 pr-2 text-sm text-gray-500 hidden sm:table-cell">{item.sku}</td>
+                        <td className="py-3.5 pr-2 text-sm font-semibold text-red-600 whitespace-nowrap">{item.quantityOnHand}</td>
+                        <td className="py-3.5 pr-2 text-sm text-gray-500 whitespace-nowrap">{item.threshold}</td>
+                        <td className="py-3.5 whitespace-nowrap"><span className={badgeClass}>{badgeText}</span></td>
                       </tr>
                     )
                   })}

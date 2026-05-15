@@ -11,6 +11,7 @@ import { TableSkeleton } from '@/components/LoadingSkeleton'
 export default function ProductsPage() {
   const { addToast } = useToast()
   const [products, setProducts] = useState([])
+  const [defaultThreshold, setDefaultThreshold] = useState(5)
   const [search, setSearch] = useState('')
   const [searchInput, setSearchInput] = useState('')
   const [loading, setLoading] = useState(true)
@@ -21,8 +22,12 @@ export default function ProductsPage() {
   const load = useCallback(async (q) => {
     setLoading(true)
     try {
-      const data = await api.products.list(q)
+      const [data, settings] = await Promise.all([
+        api.products.list(q),
+        api.settings.get().catch(() => ({ settings: { defaultLowStockThreshold: 5 } })),
+      ])
       setProducts(data.products)
+      setDefaultThreshold(settings.settings.defaultLowStockThreshold)
     } catch (err) {
       addToast(err.message, 'error')
     } finally {
@@ -75,7 +80,7 @@ export default function ProductsPage() {
   }
 
   const getStatus = (product) => {
-    const threshold = product.lowStockThreshold ?? 5
+    const threshold = product.lowStockThreshold ?? defaultThreshold
     if (product.quantityOnHand === 0) return { label: 'Out of Stock', class: 'badge-red' }
     if (product.quantityOnHand <= threshold) return { label: 'Low Stock', class: 'badge-red' }
     return { label: 'In Stock', class: 'badge-green' }
@@ -133,13 +138,13 @@ export default function ProductsPage() {
             <table className="min-w-full divide-y divide-gray-100">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-3">Product</th>
-                  <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-3">SKU</th>
-                  <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-3">Quantity</th>
-                  <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-3">Status</th>
-                  <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-3">Selling Price</th>
-                  <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-3">Updated</th>
-                  <th className="text-right text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-3">Actions</th>
+                  <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-3 sm:px-6 py-3">Product</th>
+                  <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-3 sm:px-6 py-3 hidden sm:table-cell">SKU</th>
+                  <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-3 sm:px-6 py-3">Qty</th>
+                  <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-3 sm:px-6 py-3">Status</th>
+                  <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-3 sm:px-6 py-3 hidden md:table-cell">Price</th>
+                  <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-3 sm:px-6 py-3 hidden lg:table-cell">Updated</th>
+                  <th className="text-right text-xs font-semibold text-gray-500 uppercase tracking-wider px-3 sm:px-6 py-3">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
@@ -147,44 +152,49 @@ export default function ProductsPage() {
                   const status = getStatus(product)
                   return (
                     <tr key={product.id} className="hover:bg-gray-50/80 transition-colors">
-                      <td className="px-6 py-4">
+                      <td className="px-3 sm:px-6 py-4 min-w-[140px]">
                         <Link href={`/products/${product.id}`} className="text-sm font-medium text-gray-900 hover:text-indigo-600 transition-colors">
                           {product.name}
                         </Link>
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-500 font-mono">{product.sku}</td>
-                      <td className="px-6 py-4 text-sm text-gray-900 font-semibold">{product.quantityOnHand}</td>
-                      <td className="px-6 py-4"><span className={status.class}>{status.label}</span></td>
-                      <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(product.sellingPrice)}</td>
-                      <td className="px-6 py-4 text-sm text-gray-400">{formatDateTime(product.updatedAt)}</td>
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex items-center justify-end gap-1">
+                      <td className="px-3 sm:px-6 py-4 text-sm text-gray-500 font-mono hidden sm:table-cell">{product.sku}</td>
+                      <td className="px-3 sm:px-6 py-4 text-sm text-gray-900 font-semibold whitespace-nowrap">{product.quantityOnHand}</td>
+                      <td className="px-3 sm:px-6 py-4 whitespace-nowrap"><span className={status.class}>{status.label}</span></td>
+                      <td className="px-3 sm:px-6 py-4 text-sm text-gray-900 whitespace-nowrap hidden md:table-cell">{formatCurrency(product.sellingPrice)}</td>
+                      <td className="px-3 sm:px-6 py-4 text-sm text-gray-400 whitespace-nowrap hidden lg:table-cell">{formatDateTime(product.updatedAt)}</td>
+                      <td className="px-3 sm:px-6 py-4 text-right whitespace-nowrap">
+                        <div className="flex items-center justify-end gap-0.5 sm:gap-1">
                           <button
                             onClick={() => handleAdjust(product.id, -1)}
                             disabled={adjustingId === product.id || product.quantityOnHand <= 0}
-                            className="btn-ghost p-1.5 text-gray-400 hover:text-red-600 disabled:opacity-30"
-                            title="Decrease stock"
+                            className="btn-ghost p-1 sm:p-1.5 text-gray-400 hover:text-red-600 disabled:opacity-30"
+                            title="Decrease stock by 1"
                           >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
                             </svg>
                           </button>
-                          <span className="text-xs text-gray-400 w-5 text-center">{adjustingId === product.id ? '...' : ''}</span>
                           <button
                             onClick={() => handleAdjust(product.id, 1)}
                             disabled={adjustingId === product.id}
-                            className="btn-ghost p-1.5 text-gray-400 hover:text-emerald-600 disabled:opacity-30"
-                            title="Increase stock"
+                            className="btn-ghost p-1 sm:p-1.5 text-gray-400 hover:text-emerald-600 disabled:opacity-30"
+                            title="Increase stock by 1"
                           >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                             </svg>
                           </button>
-                          <Link href={`/products/${product.id}/edit`} className="btn-ghost text-indigo-600 hover:text-indigo-700">
-                            Edit
+                          <Link href={`/products/${product.id}/edit`} className="btn-ghost p-1 sm:px-2 text-xs sm:text-sm text-indigo-600 hover:text-indigo-700">
+                            <span className="hidden sm:inline">Edit</span>
+                            <svg className="w-3.5 h-3.5 sm:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
                           </Link>
-                          <button onClick={() => confirmDelete(product)} className="btn-ghost text-red-500 hover:text-red-700">
-                            Delete
+                          <button onClick={() => confirmDelete(product)} className="btn-ghost p-1 sm:px-2 text-xs sm:text-sm text-red-500 hover:text-red-700">
+                            <span className="hidden sm:inline">Delete</span>
+                            <svg className="w-3.5 h-3.5 sm:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
                           </button>
                         </div>
                       </td>

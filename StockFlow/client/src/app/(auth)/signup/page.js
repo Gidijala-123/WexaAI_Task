@@ -3,22 +3,8 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useAuth } from '@/app/layout'
 import { api } from '@/lib/api'
-
-function Cube({ className, size = 60, delay = 0, left, top }) {
-  const s = size / 2
-  return (
-    <div className={`absolute animate-float ${className}`} style={{ left, top, animationDelay: `${delay}s` }}>
-      <div className="relative" style={{ width: size, height: size, transform: 'rotate3d(1, 0.5, 0, 35deg) rotateZ(-15deg)', transformStyle: 'preserve-3d' }}>
-        <div className="absolute inset-0 border border-indigo-500/20 bg-indigo-500/[0.03]" style={{ transform: `translateZ(${s}px)` }} />
-        <div className="absolute inset-0 border border-indigo-500/20 bg-indigo-500/[0.03]" style={{ transform: `rotateY(90deg) translateZ(${s}px)` }} />
-        <div className="absolute inset-0 border border-indigo-500/20 bg-indigo-500/[0.03]" style={{ transform: `rotateX(90deg) translateZ(${s}px)` }} />
-        <div className="absolute inset-0 border border-indigo-500/20 bg-indigo-500/[0.03]" style={{ transform: `translateZ(-${s}px)` }} />
-        <div className="absolute inset-0 border border-indigo-500/20 bg-indigo-500/[0.03]" style={{ transform: `rotateY(90deg) translateZ(-${s}px)` }} />
-        <div className="absolute inset-0 border border-indigo-500/20 bg-indigo-500/[0.03]" style={{ transform: `rotateX(90deg) translateZ(-${s}px)` }} />
-      </div>
-    </div>
-  )
-}
+import AuthBackground from '@/components/AuthBackground'
+import PasswordField from '@/components/PasswordField'
 
 export default function SignupPage() {
   const { login } = useAuth()
@@ -73,44 +59,9 @@ export default function SignupPage() {
     return bars[Math.min(lvl, 4)] || { color: 'bg-gray-600', width: 'w-0', label: '' }
   }
 
-  const cubes = [
-    { left: '8%', top: '12%', size: 40, delay: 0, rev: false },
-    { left: '88%', top: '18%', size: 55, delay: 1.5, rev: true },
-    { left: '78%', top: '72%', size: 35, delay: 0.8, rev: false },
-    { left: '15%', top: '78%', size: 50, delay: 2.2, rev: true },
-    { left: '50%', top: '8%', size: 30, delay: 3, rev: false },
-    { left: '5%', top: '42%', size: 25, delay: 1.2, rev: true },
-    { left: '93%', top: '50%', size: 45, delay: 2.8, rev: false },
-  ]
-
-  const glows = [
-    { left: '65%', top: '35%', size: 200, delay: 0 },
-    { left: '25%', top: '65%', size: 220, delay: 2 },
-    { left: '75%', top: '15%', size: 140, delay: 4 },
-  ]
-
   return (
     <div className="min-h-screen bg-[#07080b] flex items-center justify-center p-4 relative overflow-hidden">
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute inset-0" style={{
-          backgroundImage: 'radial-gradient(rgba(255,255,255,0.03) 1px, transparent 1px)',
-          backgroundSize: '40px 40px',
-        }} />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(79,70,229,0.08),transparent_70%)]" />
-
-        {cubes.map((c, i) => (
-          <Cube key={i} left={c.left} top={c.top} size={c.size} delay={c.delay}
-            className={c.rev ? 'animate-float-reverse' : ''} />
-        ))}
-
-        {glows.map((c, i) => (
-          <div key={i} className="absolute rounded-full animate-pulse-glow" style={{
-            left: c.left, top: c.top, width: c.size, height: c.size,
-            transform: 'translate(-50%,-50%)', animationDelay: `${c.delay}s`,
-            background: 'radial-gradient(circle, rgba(79,70,229,0.06) 0%, transparent 70%)',
-          }} />
-        ))}
-      </div>
+      <AuthBackground />
 
       <div className={`w-full max-w-md transition-all duration-700 ease-out ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
         <div className="relative bg-[#0e0f14]/90 backdrop-blur-xl rounded-2xl border border-white/[0.06] shadow-2xl p-8 overflow-hidden">
@@ -146,10 +97,8 @@ export default function SignupPage() {
             ))}
 
             <div className={`transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`} style={{ transitionDelay: '250ms' }}>
-              <label className="block text-sm font-medium text-gray-400 mb-1.5">Password</label>
-              <input type="password" required value={form.password} onChange={update('password')}
-                className="w-full px-3.5 py-2.5 bg-[#121318] border border-white/[0.08] rounded-xl text-sm text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 transition-all duration-200"
-                placeholder="Min. 6 characters" autoComplete="new-password" />
+              <PasswordField value={form.password} onChange={update('password')}
+                placeholder="Min. 6 characters" autoComplete="new-password" label="Password" />
               {form.password && (
                 <div className="mt-2 animate-fade-in">
                   <div className="h-1 bg-gray-700 rounded-full overflow-hidden">
@@ -163,10 +112,8 @@ export default function SignupPage() {
             </div>
 
             <div className={`transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`} style={{ transitionDelay: '300ms' }}>
-              <label className="block text-sm font-medium text-gray-400 mb-1.5">Confirm password</label>
-              <input type="password" required value={form.confirmPassword} onChange={update('confirmPassword')}
-                className="w-full px-3.5 py-2.5 bg-[#121318] border border-white/[0.08] rounded-xl text-sm text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 transition-all duration-200"
-                placeholder="Repeat your password" autoComplete="new-password" />
+              <PasswordField value={form.confirmPassword} onChange={update('confirmPassword')}
+                placeholder="Repeat your password" autoComplete="new-password" label="Confirm password" />
             </div>
 
             <div className={`transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`} style={{ transitionDelay: '350ms' }}>

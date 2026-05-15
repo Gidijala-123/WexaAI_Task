@@ -11,30 +11,34 @@ A production-ready, multi-tenant inventory management SaaS application built wit
 ### Core Functionality
 - **Multi-tenant Architecture** — Every user gets their own organization. All data is scoped per org.
 - **Authentication** — Email/password signup & login with JWT, bcrypt hashing (12 rounds).
-- **Dashboard** — Real-time inventory summary with total products, stock quantity, and low-stock alerts with visual bar charts.
+- **Dashboard** — Real-time inventory summary with total products, stock quantity, and low-stock alerts with visual bar charts and stock level indicators.
 - **Product Management** — Full CRUD with SKU uniqueness validation per organization.
-- **Stock Adjustments** — Quick +/- buttons on product list + detailed adjustment form on product page.
-- **Low Stock Detection** — Configurable global threshold (per-org) + per-product overrides.
-- **Search** — Real-time search by product name or SKU.
+- **Stock Adjustments** — Quick +/-1 inline buttons on product list + detailed stock adjustment form on product detail page.
+- **Low Stock Detection** — Configurable global threshold (per-org) + per-product overrides with visual badges (Critical/Low/In Stock).
+- **Search** — Search by product name or SKU with clear filters.
+- **Product Detail Page** — Full product view with all fields, stock adjustment, and quick actions.
 
 ### UI/UX
-- Modern sidebar layout with responsive design (mobile + desktop)
-- Toast notifications for all actions
-- Confirmation modals for destructive operations
-- Loading skeletons and animated transitions
-- Empty states with contextual guidance
-- Password strength indicator on signup
-- Professional gradient auth pages
+- **Dark theme auth pages** — Animated 3D floating cubes (inventory-themed), glassmorphism card, staggered entrance animations, dot-grid background.
+- **Sidebar layout** — Responsive sidebar with icons, user avatar, org name, collapsible mobile drawer with overlay.
+- **Toast notification system** — Context-based toast stack with auto-dismiss, success/error/info variants.
+- **Confirmation modals** — Reusable Modal component with backdrop, escape-to-close, focus trap.
+- **Loading skeletons** — PageSkeleton, CardSkeleton, TableSkeleton for all async states.
+- **Empty states** — Contextual empty states with action buttons for each view.
+- **Password strength indicator** — Real-time strength bar on signup with color coding.
+- **Status badges** — In Stock (green), Low Stock (red), Out of Stock (red) with ring styling.
+- **Animated transitions** — Fade, slide, and entrance animations throughout.
 
 ### Security
 - **Helmet.js** — Security headers (XSS, clickjacking, MIME sniffing, etc.)
-- **Rate Limiting** — 100 req/15min global, 20 req/15min on login
-- **Input Validation** — express-validator on all endpoints (sanitization + validation)
-- **CORS** — Strict origin whitelist
+- **Rate Limiting** — 100 req/15min global, 20 req/15min on login endpoint
+- **Input Validation** — express-validator on all endpoints (sanitization, normalization, type coercion)
+- **CORS** — Strict origin whitelist via CLIENT_URL env
 - **SQL Injection** — Prevented by Prisma ORM (parameterized queries)
 - **Password Hashing** — bcrypt with 12 salt rounds
-- **JWT** — Signed tokens with 7-day expiry
+- **JWT** — Signed tokens with 7-day expiry, Bearer auth scheme
 - **Request Size Limit** — 1MB body limit
+- **HTTP Security Headers** — Content-Type enforcement, XSS filter, no sniff, frameguard
 
 ---
 
@@ -55,49 +59,48 @@ A production-ready, multi-tenant inventory management SaaS application built wit
 
 ```
 StockFlow/
-├── server/                        # Express API server
+├── server/                              # Express API server
 │   ├── prisma/
-│   │   └── schema.prisma          # Database schema (Organization, User, Product, Settings)
+│   │   └── schema.prisma                # DB schema (Organization, User, Product, Settings)
 │   ├── src/
-│   │   ├── index.js               # Express app with security middleware
-│   │   ├── middleware/
-│   │   │   └── auth.js            # JWT verification middleware
+│   │   ├── index.js                     # Express app (helmet, CORS, rate-limit, routes)
+│   │   ├── middleware/auth.js           # JWT Bearer verification
 │   │   └── routes/
-│   │       ├── auth.js            # POST /signup, POST /login, GET /me
-│   │       ├── products.js        # CRUD + stock adjustment
-│   │       ├── dashboard.js       # GET / (summary + low stock)
-│   │       └── settings.js        # GET/PUT / (default threshold)
-│   ├── .env.example
+│   │       ├── auth.js                  # POST signup/login, GET /me (validated)
+│   │       ├── products.js              # CRUD + PATCH stock (validated)
+│   │       ├── dashboard.js             # GET summary + low-stock items
+│   │       └── settings.js              # GET/PUT default threshold (validated)
+│   ├── .env / .env.example
 │   └── package.json
-├── client/                        # Next.js frontend
+├── client/                              # Next.js 14 App Router frontend
 │   ├── src/
 │   │   ├── app/
-│   │   │   ├── layout.js          # Root layout (AuthProvider, Toast system)
-│   │   │   ├── globals.css        # Tailwind + custom component classes
-│   │   │   ├── page.js            # Root redirect
-│   │   │   ├── (auth)/
-│   │   │   │   ├── login/page.js  # Login with branding
-│   │   │   │   └── signup/page.js # Signup with password strength
-│   │   │   └── (dashboard)/
-│   │   │       ├── layout.js      # Sidebar layout wrapper
-│   │   │       ├── dashboard/page.js    # Stats + low-stock chart
+│   │   │   ├── layout.js                # Root layout: AuthProvider + Toast system
+│   │   │   ├── globals.css              # Tailwind + animations + component classes
+│   │   │   ├── page.js                  # Auto-redirect to /dashboard or /login
+│   │   │   ├── (auth)/                  # Route group — no sidebar
+│   │   │   │   ├── login/page.js        # Dark theme, 3D cubes, glassmorphism card
+│   │   │   │   └── signup/page.js       # Same theme + password strength bar
+│   │   │   └── (dashboard)/             # Route group — with Sidebar
+│   │   │       ├── layout.js            # Wraps children with Sidebar
+│   │   │       ├── dashboard/page.js    # Stat cards + low-stock table + bar chart
 │   │   │       ├── products/
-│   │   │       │   ├── page.js          # Product list with search
-│   │   │       │   ├── create/page.js   # Create product form
-│   │   │       │   ├── [id]/page.js     # Product detail + stock adjust
-│   │   │       │   └── [id]/edit/page.js# Edit product form
-│   │   │       └── settings/page.js    # Global threshold config
+│   │   │       │   ├── page.js          # Table, search, +/-1, edit, delete
+│   │   │       │   ├── create/page.js   # Full form with validation
+│   │   │       │   ├── [id]/page.js     # Detail view + stock adjust form
+│   │   │       │   └── [id]/edit/page.js# Edit form prefilled
+│   │   │       └── settings/page.js     # Global threshold with save indicator
 │   │   ├── components/
-│   │   │   ├── Sidebar.js         # Navigation sidebar
-│   │   │   ├── Modal.js           # Confirmation dialog
-│   │   │   ├── EmptyState.js      # Empty state placeholder
-│   │   │   └── LoadingSkeleton.js # Loading placeholders
+│   │   │   ├── Sidebar.js               # Nav links, user avatar, org name, logout
+│   │   │   ├── Modal.js                 # Reusable overlay dialog (esc to close)
+│   │   │   ├── EmptyState.js            # Icon + message + action button
+│   │   │   └── LoadingSkeleton.js       # CardSkeleton, TableSkeleton, PageSkeleton
 │   │   └── lib/
-│   │       ├── api.js             # HTTP client wrapper
-│   │       └── utils.js           # Formatters (currency, date)
-│   ├── .env.example
+│   │       ├── api.js                   # Typed HTTP client (auth, products, etc.)
+│   │       └── utils.js                 # formatCurrency, formatDate, formatDateTime
+│   ├── .env / .env.example
 │   └── package.json
-├── render.yaml                    # Render.com deployment config
+├── render.yaml                          # Render.com Blueprint (2 services)
 └── README.md
 ```
 

@@ -3,22 +3,8 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useAuth } from '@/app/layout'
 import { api } from '@/lib/api'
-
-function Cube({ className, size = 60, delay = 0, left, top }) {
-  const s = size / 2
-  return (
-    <div className={`absolute animate-float ${className}`} style={{ left, top, animationDelay: `${delay}s` }}>
-      <div className="relative" style={{ width: size, height: size, transform: 'rotate3d(1, 0.5, 0, 35deg) rotateZ(-15deg)', transformStyle: 'preserve-3d' }}>
-        <div className="absolute inset-0 border border-indigo-500/20 bg-indigo-500/[0.03]" style={{ transform: `translateZ(${s}px)` }} />
-        <div className="absolute inset-0 border border-indigo-500/20 bg-indigo-500/[0.03]" style={{ transform: `rotateY(90deg) translateZ(${s}px)` }} />
-        <div className="absolute inset-0 border border-indigo-500/20 bg-indigo-500/[0.03]" style={{ transform: `rotateX(90deg) translateZ(${s}px)` }} />
-        <div className="absolute inset-0 border border-indigo-500/20 bg-indigo-500/[0.03]" style={{ transform: `translateZ(-${s}px)` }} />
-        <div className="absolute inset-0 border border-indigo-500/20 bg-indigo-500/[0.03]" style={{ transform: `rotateY(90deg) translateZ(-${s}px)` }} />
-        <div className="absolute inset-0 border border-indigo-500/20 bg-indigo-500/[0.03]" style={{ transform: `rotateX(90deg) translateZ(-${s}px)` }} />
-      </div>
-    </div>
-  )
-}
+import AuthBackground from '@/components/AuthBackground'
+import PasswordField from '@/components/PasswordField'
 
 export default function LoginPage() {
   const { login } = useAuth()
@@ -44,44 +30,9 @@ export default function LoginPage() {
     }
   }
 
-  const cubes = [
-    { left: '8%', top: '12%', size: 40, delay: 0, rev: false },
-    { left: '88%', top: '18%', size: 55, delay: 1.5, rev: true },
-    { left: '78%', top: '72%', size: 35, delay: 0.8, rev: false },
-    { left: '15%', top: '78%', size: 50, delay: 2.2, rev: true },
-    { left: '50%', top: '8%', size: 30, delay: 3, rev: false },
-    { left: '92%', top: '55%', size: 25, delay: 1.2, rev: true },
-    { left: '3%', top: '48%', size: 45, delay: 2.8, rev: false },
-  ]
-
-  const glows = [
-    { left: '60%', top: '40%', size: 180, delay: 0 },
-    { left: '30%', top: '60%', size: 250, delay: 1.5 },
-    { left: '70%', top: '20%', size: 120, delay: 3 },
-  ]
-
   return (
     <div className="min-h-screen bg-[#07080b] flex items-center justify-center p-4 relative overflow-hidden">
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute inset-0" style={{
-          backgroundImage: 'radial-gradient(rgba(255,255,255,0.03) 1px, transparent 1px)',
-          backgroundSize: '40px 40px',
-        }} />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(79,70,229,0.08),transparent_70%)]" />
-
-        {cubes.map((c, i) => (
-          <Cube key={i} left={c.left} top={c.top} size={c.size} delay={c.delay}
-            className={c.rev ? 'animate-float-reverse' : ''} />
-        ))}
-
-        {glows.map((c, i) => (
-          <div key={i} className="absolute rounded-full animate-pulse-glow" style={{
-            left: c.left, top: c.top, width: c.size, height: c.size,
-            transform: 'translate(-50%,-50%)', animationDelay: `${c.delay}s`,
-            background: 'radial-gradient(circle, rgba(79,70,229,0.06) 0%, transparent 70%)',
-          }} />
-        ))}
-      </div>
+      <AuthBackground />
 
       <div className={`w-full max-w-md transition-all duration-700 ease-out ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
         <div className="relative bg-[#0e0f14]/90 backdrop-blur-xl rounded-2xl border border-white/[0.06] shadow-2xl p-8 overflow-hidden">
@@ -112,10 +63,8 @@ export default function LoginPage() {
             </div>
 
             <div className={`transition-all duration-700 delay-300 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-              <label className="block text-sm font-medium text-gray-400 mb-1.5">Password</label>
-              <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-[#121318] border border-white/[0.08] rounded-xl text-sm text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 transition-all duration-200"
-                placeholder="Enter your password" autoComplete="current-password" />
+              <PasswordField value={password} onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter your password" autoComplete="current-password" label="Password" />
             </div>
 
             <div className={`transition-all duration-700 delay-400 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>

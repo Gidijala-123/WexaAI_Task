@@ -6,6 +6,11 @@ async function request(path, options = {}) {
   if (token) headers['Authorization'] = `Bearer ${token}`
 
   const res = await fetch(`${API}${path}`, { ...options, headers })
+  if (res.status === 401 && !path.startsWith('/auth/')) {
+    localStorage.removeItem('token')
+    window.location.href = '/login'
+    throw new Error('Session expired. Please sign in again.')
+  }
   const data = await res.json()
   if (!res.ok) {
     const error = new Error(data.error || `Request failed (${res.status})`)
