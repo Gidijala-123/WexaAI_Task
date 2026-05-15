@@ -13,14 +13,23 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:3000';
 
-app.use(helmet());
-
 app.use(cors({
-  origin: CLIENT_URL,
+  origin: function (origin, callback) {
+    const allowed = [CLIENT_URL, 'http://localhost:3000', 'http://localhost:3001'];
+    if (!origin || allowed.some((a) => origin.startsWith(a))) {
+      callback(null, true);
+    } else {
+      callback(null, CLIENT_URL);
+    }
+  },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
+
+app.options('*', cors());
+
+app.use(helmet());
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
