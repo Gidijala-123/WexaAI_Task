@@ -1,5 +1,4 @@
 const express = require('express');
-const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const { PrismaClient } = require('@prisma/client');
@@ -13,21 +12,22 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:3000';
 
-app.use(cors({
-  origin: function (origin, callback) {
-    const allowed = [CLIENT_URL, 'http://localhost:3000', 'http://localhost:3001'];
-    if (!origin || allowed.some((a) => origin.startsWith(a))) {
-      callback(null, true);
-    } else {
-      callback(null, CLIENT_URL);
-    }
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-}));
-
-app.options('*', cors());
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  const allowed = [CLIENT_URL, 'http://localhost:3000', 'http://localhost:3001'];
+  if (origin && allowed.some((a) => origin.startsWith(a))) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  } else if (origin) {
+    res.setHeader('Access-Control-Allow-Origin', CLIENT_URL);
+  } else {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+  }
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  if (req.method === 'OPTIONS') return res.status(204).end();
+  next();
+});
 
 app.use(helmet());
 
