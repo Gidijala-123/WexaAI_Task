@@ -2,13 +2,14 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { useAuth } from '@/app/layout'
+import { useAuth, useToast } from '@/app/layout'
 import { api } from '@/lib/api'
 import AuthBackground from '@/components/AuthBackground'
 import PasswordField from '@/components/PasswordField'
 
 export default function SignupPage() {
   const { login } = useAuth()
+  const { addToast } = useToast()
   const router = useRouter()
   const [form, setForm] = useState({ email: '', password: '', confirmPassword: '', organizationName: '' })
   const [error, setError] = useState('')
@@ -42,7 +43,8 @@ export default function SignupPage() {
       await api.auth.signup({
         email: form.email, password: form.password, organizationName: form.organizationName,
       })
-      router.push('/login')
+      addToast('Account created successfully! Please sign in.', 'success')
+      setTimeout(() => router.push('/login'), 1500)
     } catch (err) {
       setError(err.message)
     } finally {
