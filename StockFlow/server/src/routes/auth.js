@@ -21,7 +21,7 @@ router.post('/signup', [
     if (existing) {
       return res.status(409).json({ error: 'Email already registered' });
     }
-    const hashedPassword = await bcrypt.hash(password, 12);
+    const hashedPassword = await bcrypt.hash(password, 10);
     const org = await req.prisma.organization.create({
       data: {
         name: organizationName.trim(),
