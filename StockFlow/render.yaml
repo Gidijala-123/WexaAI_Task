@@ -29,7 +29,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: NEXT_PUBLIC_API_URL
-        value: https://stockflow-api.onrender.com/api
+        value: https://stockflow-api-k4m2.onrender.com/api
 
 databases:
   - name: stockflow-db
