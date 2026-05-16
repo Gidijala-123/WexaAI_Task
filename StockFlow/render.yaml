@@ -6,6 +6,7 @@ services:
     plan: free
     buildCommand: cd server && npm install
     startCommand: cd server && npx prisma generate && npx prisma db push && npm start
+    healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
         value: production
