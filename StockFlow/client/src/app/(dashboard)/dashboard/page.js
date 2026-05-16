@@ -39,7 +39,7 @@ function LowStockBarChart({ items }) {
             <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
               <div
                 className={`h-full rounded-full transition-all duration-500 ${
-                  pct <= 50 ? 'bg-red-500' : pct <= 75 ? 'bg-amber-500' : 'bg-emerald-500'
+                  pct <= 50 ? 'bg-red-500' : 'bg-amber-500'
                 }`}
                 style={{ width: `${barWidth}%` }}
               />
