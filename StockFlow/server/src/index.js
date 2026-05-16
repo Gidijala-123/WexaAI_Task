@@ -29,7 +29,9 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(helmet());
+app.use(helmet({
+  crossOriginResourcePolicy: false,
+}));
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,

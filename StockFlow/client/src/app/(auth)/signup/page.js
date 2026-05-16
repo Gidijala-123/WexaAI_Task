@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/app/layout'
 import { api } from '@/lib/api'
@@ -8,6 +9,7 @@ import PasswordField from '@/components/PasswordField'
 
 export default function SignupPage() {
   const { login } = useAuth()
+  const router = useRouter()
   const [form, setForm] = useState({ email: '', password: '', confirmPassword: '', organizationName: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -37,10 +39,10 @@ export default function SignupPage() {
     if (form.password.length < 6) return setError('Password must be at least 6 characters')
     setLoading(true)
     try {
-      const data = await api.auth.signup({
+      await api.auth.signup({
         email: form.email, password: form.password, organizationName: form.organizationName,
       })
-      login(data.token, data.user)
+      router.push('/login')
     } catch (err) {
       setError(err.message)
     } finally {
