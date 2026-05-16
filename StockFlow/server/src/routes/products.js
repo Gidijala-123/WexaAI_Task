@@ -6,22 +6,43 @@ const router = Router();
 router.use(authMiddleware);
 
 router.get('/', [
-  query('search').optional().trim().escape(),
+  query('search').optional().trim(),
+  query('page').optional().isInt({ min: 1 }).withMessage('Page must be a positive integer'),
+  query('limit').optional().isInt({ min: 1, max: 100 }).withMessage('Limit must be between 1 and 100'),
 ], async (req, res) => {
   try {
     const { search } = req.query;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+
     const where = { organizationId: req.organizationId };
     if (search) {
       where.OR = [
-        { name: { contains: search } },
-        { sku: { contains: search } },
+        { name: { contains: search, mode: 'insensitive' } },
+        { sku: { contains: search.toUpperCase() } },
       ];
     }
-    const products = await req.prisma.product.findMany({
-      where,
-      orderBy: { updatedAt: 'desc' },
+
+    const [products, total] = await Promise.all([
+      req.prisma.product.findMany({
+        where,
+        orderBy: { updatedAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      req.prisma.product.count({ where }),
+    ]);
+
+    res.json({
+      products,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
     });
-    res.json({ products });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -44,8 +65,9 @@ router.get('/:id', [
 });
 
 router.post('/', [
-  body('name').trim().isLength({ min: 1 }).withMessage('Name is required'),
+  body('name').trim().isLength({ min: 1 }).withMessage('Name is required').escape(),
   body('sku').trim().isLength({ min: 1 }).withMessage('SKU is required'),
+  body('description').optional({ values: 'null' }).trim().escape(),
   body('quantityOnHand').optional().isInt({ min: 0 }).withMessage('Quantity must be a non-negative integer'),
   body('costPrice').optional({ values: 'null' }).isFloat({ min: 0 }).withMessage('Cost price must be non-negative'),
   body('sellingPrice').optional({ values: 'null' }).isFloat({ min: 0 }).withMessage('Selling price must be non-negative'),
@@ -82,8 +104,9 @@ router.post('/', [
 
 router.put('/:id', [
   param('id').isInt().withMessage('Invalid product ID'),
-  body('name').optional().trim().isLength({ min: 1 }).withMessage('Name is required'),
+  body('name').optional().trim().isLength({ min: 1 }).withMessage('Name is required').escape(),
   body('sku').optional().trim().isLength({ min: 1 }).withMessage('SKU is required'),
+  body('description').optional({ values: 'null' }).trim().escape(),
   body('quantityOnHand').optional({ values: 'null' }).isInt({ min: 0 }).withMessage('Quantity must be a non-negative integer'),
   body('costPrice').optional({ values: 'null' }).isFloat({ min: 0 }).withMessage('Cost price must be non-negative'),
   body('sellingPrice').optional({ values: 'null' }).isFloat({ min: 0 }).withMessage('Selling price must be non-negative'),

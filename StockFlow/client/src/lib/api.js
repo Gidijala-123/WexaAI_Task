@@ -27,7 +27,13 @@ export const api = {
     me: () => request('/auth/me'),
   },
   products: {
-    list: (search) => request(`/products${search ? `?search=${encodeURIComponent(search)}` : ''}`),
+    list: (search, page = 1, limit = 20) => {
+      const params = new URLSearchParams()
+      if (search) params.set('search', search)
+      params.set('page', page)
+      params.set('limit', limit)
+      return request(`/products?${params.toString()}`)
+    },
     get: (id) => request(`/products/${id}`),
     create: (body) => request('/products', { method: 'POST', body: JSON.stringify(body) }),
     update: (id, body) => request(`/products/${id}`, { method: 'PUT', body: JSON.stringify(body) }),

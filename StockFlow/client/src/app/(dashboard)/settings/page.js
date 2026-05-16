@@ -1,11 +1,12 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { api } from '@/lib/api'
-import { useToast } from '@/app/layout'
+import { useAuth, useToast } from '@/app/layout'
 import { CardSkeleton } from '@/components/LoadingSkeleton'
 
 export default function SettingsPage() {
   const { addToast } = useToast()
+  const { user } = useAuth()
   const [threshold, setThreshold] = useState('5')
   const [loading, setLoading] = useState(false)
   const [fetching, setFetching] = useState(true)
@@ -72,10 +73,21 @@ export default function SettingsPage() {
       </div>
 
       <div className="mt-8 card p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-2">Organization</h2>
-        <p className="text-sm text-gray-500">
-          Your organization and account settings are managed through your account. Contact support for changes.
-        </p>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Organization</h2>
+        <dl className="space-y-3">
+          <div className="flex items-center justify-between py-2 border-b border-gray-100">
+            <dt className="text-sm text-gray-500">Organization name</dt>
+            <dd className="text-sm font-medium text-gray-900">{user?.organization?.name ?? '—'}</dd>
+          </div>
+          <div className="flex items-center justify-between py-2 border-b border-gray-100">
+            <dt className="text-sm text-gray-500">Account email</dt>
+            <dd className="text-sm font-medium text-gray-900">{user?.email ?? '—'}</dd>
+          </div>
+          <div className="flex items-center justify-between py-2">
+            <dt className="text-sm text-gray-500">Organization ID</dt>
+            <dd className="text-sm font-mono text-gray-400">{user?.organization?.id ?? '—'}</dd>
+          </div>
+        </dl>
       </div>
     </div>
   )

@@ -1,6 +1,5 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth, useToast } from '@/app/layout'
 import { api } from '@/lib/api'
@@ -10,7 +9,6 @@ import PasswordField from '@/components/PasswordField'
 export default function SignupPage() {
   const { login } = useAuth()
   const { addToast } = useToast()
-  const router = useRouter()
   const [form, setForm] = useState({ email: '', password: '', confirmPassword: '', organizationName: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -40,11 +38,11 @@ export default function SignupPage() {
     if (form.password.length < 6) return setError('Password must be at least 6 characters')
     setLoading(true)
     try {
-      await api.auth.signup({
+      const data = await api.auth.signup({
         email: form.email, password: form.password, organizationName: form.organizationName,
       })
-      addToast('Account created successfully! Please sign in.', 'success')
-      setTimeout(() => router.push('/login'), 1500)
+      addToast('Account created successfully! Welcome to StockFlow.', 'success')
+      login(data.token, data.user)
     } catch (err) {
       setError(err.message)
     } finally {
@@ -89,8 +87,7 @@ export default function SignupPage() {
             )}
 
             {[
-              { field: 'organizationName', label: 'Organization name', placeholder: 'My Store', delay: 150, autoComplete: 'off' },
-              { field: 'email', label: 'Email address', placeholder: 'you@example.com', delay: 200, autoComplete: 'email', type: 'email' },
+              { field: 'email', label: 'Email address', placeholder: 'you@example.com', delay: 150, autoComplete: 'email', type: 'email' },
             ].map((f) => (
               <div key={f.field} className={`transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`} style={{ transitionDelay: `${f.delay}ms` }}>
                 <label className="block text-sm font-medium text-gray-400 mb-1.5">{f.label}</label>
@@ -100,7 +97,7 @@ export default function SignupPage() {
               </div>
             ))}
 
-            <div className={`transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`} style={{ transitionDelay: '250ms' }}>
+            <div className={`transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`} style={{ transitionDelay: '200ms' }}>
               <PasswordField value={form.password} onChange={update('password')}
                 placeholder="Min. 6 characters" autoComplete="new-password" label="Password" />
               {form.password && (
@@ -115,9 +112,16 @@ export default function SignupPage() {
               )}
             </div>
 
-            <div className={`transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`} style={{ transitionDelay: '300ms' }}>
+            <div className={`transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`} style={{ transitionDelay: '250ms' }}>
               <PasswordField value={form.confirmPassword} onChange={update('confirmPassword')}
                 placeholder="Repeat your password" autoComplete="new-password" label="Confirm password" />
+            </div>
+
+            <div className={`transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`} style={{ transitionDelay: '300ms' }}>
+              <label className="block text-sm font-medium text-gray-400 mb-1.5">Organization name</label>
+              <input type="text" required value={form.organizationName} onChange={update('organizationName')}
+                className="w-full px-3.5 py-2.5 bg-[#121318] border border-white/[0.08] rounded-xl text-sm text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 transition-all duration-200"
+                placeholder="My Store" autoComplete="off" />
             </div>
 
             <div className={`transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`} style={{ transitionDelay: '350ms' }}>

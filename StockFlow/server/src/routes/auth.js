@@ -2,7 +2,7 @@ const { Router } = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
-const { JWT_SECRET } = require('../middleware/auth');
+const { JWT_SECRET, authMiddleware } = require('../middleware/auth');
 
 const router = Router();
 
@@ -88,16 +88,10 @@ router.post('/login', [
   }
 });
 
-router.get('/me', async (req, res) => {
-  const header = req.headers.authorization;
-  if (!header || !header.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'No token provided' });
-  }
+router.get('/me', authMiddleware, async (req, res) => {
   try {
-    const token = header.split(' ')[1];
-    const decoded = jwt.verify(token, JWT_SECRET);
     const user = await req.prisma.user.findUnique({
-      where: { id: decoded.userId },
+      where: { id: req.userId },
       include: { organization: true },
     });
     if (!user) return res.status(404).json({ error: 'User not found' });
