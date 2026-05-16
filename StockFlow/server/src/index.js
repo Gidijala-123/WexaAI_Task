@@ -12,14 +12,19 @@ const app = express();
 const PORT = process.env.PORT || 1111;
 const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:3000';
 
+// CORS must be first — before helmet and everything else
+const allowedOrigins = [
+  CLIENT_URL,
+  'http://localhost:3000',
+  'https://stockflow-client.onrender.com',
+];
+
 app.use((req, res, next) => {
   const origin = req.headers.origin;
-  const allowed = [CLIENT_URL, 'http://localhost:3000', 'http://localhost:3001'];
-  if (origin && allowed.some((a) => origin.startsWith(a))) {
+  if (origin && allowedOrigins.includes(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
-  } else if (origin) {
-    res.setHeader('Access-Control-Allow-Origin', CLIENT_URL);
-  } else {
+  } else if (!origin) {
+    // non-browser requests (curl, Postman, server-to-server)
     res.setHeader('Access-Control-Allow-Origin', '*');
   }
   res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -29,8 +34,10 @@ app.use((req, res, next) => {
   next();
 });
 
+// Helmet after CORS — disable policies that strip CORS headers
 app.use(helmet({
   crossOriginResourcePolicy: false,
+  crossOriginOpenerPolicy: false,
 }));
 
 const limiter = rateLimit({
