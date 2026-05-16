@@ -6,7 +6,8 @@
     "dev": "nodemon src/index.js",
     "start": "node src/index.js",
     "db:push": "npx prisma db push",
-    "db:seed": "node prisma/seed.js"
+    "db:seed": "node prisma/seed.js",
+    "postinstall": "echo 'Skipping prisma generate at install time'"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
