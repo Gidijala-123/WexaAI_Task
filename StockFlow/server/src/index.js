@@ -40,6 +40,7 @@ app.use(helmet({
   crossOriginOpenerPolicy: false,
 }));
 
+// Health check before rate limiter — must never be rate limited
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
@@ -49,6 +50,7 @@ const limiter = rateLimit({
   max: 300,
   standardHeaders: true,
   legacyHeaders: false,
+  skip: (req) => req.path === '/health', // extra safety — skip health even if matched
   message: { error: 'Too many requests, please try again later' },
 });
 app.use('/api/', limiter);
@@ -62,6 +64,15 @@ const authLimiter = rateLimit({
 });
 app.use('/api/auth/login', authLimiter);
 
+const signupLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many accounts created from this IP, please try again later' },
+});
+app.use('/api/auth/signup', signupLimiter);
+
 app.use(express.json({ limit: '1mb' }));
 
 app.use((req, res, next) => {
@@ -74,6 +85,11 @@ app.use('/api/products', productRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/settings', settingsRoutes);
 
+// 404 handler for unknown routes
+app.use((req, res) => {
+  res.status(404).json({ error: 'Not found' });
+});
+
 app.use((err, req, res, next) => {
   console.error(err);
   const status = err.status || 500;
@@ -82,6 +98,18 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`StockFlow server running on port ${PORT}`);
+});
+
+// Graceful shutdown — close DB connection cleanly on process exit
+process.on('SIGTERM', async () => {
+  console.log('SIGTERM received, shutting down gracefully');
+  await prisma.$disconnect();
+  server.close(() => process.exit(0));
+});
+
+process.on('SIGINT', async () => {
+  await prisma.$disconnect();
+  server.close(() => process.exit(0));
 });

@@ -15,7 +15,11 @@ export default function SignupPage() {
   const [passwordStrength, setPasswordStrength] = useState(0)
   const [mounted, setMounted] = useState(false)
 
-  useEffect(() => { setMounted(true) }, [])
+  useEffect(() => {
+    setMounted(true)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:1111/api'}/health`)
+      .catch(() => {})
+  }, [])
 
   const update = (field) => (e) => {
     const val = e.target.value

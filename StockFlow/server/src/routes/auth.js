@@ -45,7 +45,8 @@ router.post('/signup', [
       },
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('Signup error:', err);
+    res.status(500).json({ error: 'Failed to create account. Please try again.' });
   }
 });
 
@@ -84,7 +85,8 @@ router.post('/login', [
       },
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('Login error:', err);
+    res.status(500).json({ error: 'Login failed. Please try again.' });
   }
 });
 

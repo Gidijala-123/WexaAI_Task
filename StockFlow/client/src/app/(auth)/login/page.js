@@ -14,7 +14,13 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [mounted, setMounted] = useState(false)
 
-  useEffect(() => { setMounted(true) }, [])
+  useEffect(() => {
+    setMounted(true)
+    // Ping the health endpoint as soon as the login page loads to wake up
+    // the server from Render free tier spin-down, so it's warm by submit time
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:1111/api'}/health`)
+      .catch(() => {}) // silently ignore — this is just a warmup
+  }, [])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
