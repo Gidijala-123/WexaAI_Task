@@ -4,7 +4,7 @@ services:
     env: node
     region: oregon
     plan: free
-    buildCommand: cd server && npm install && npx prisma db push
+    buildCommand: cd server && npm install && npx prisma generate && npx prisma db push
     startCommand: cd server && npm start
     envVars:
       - key: NODE_ENV
@@ -14,8 +14,9 @@ services:
       - key: JWT_SECRET
         generateValue: true
       - key: DATABASE_URL
-        value: "file:./dev.db"
-    healthCheckPath: /api/health
+        fromDatabase:
+          name: stockflow-db
+          property: connectionString
 
   - type: web
     name: stockflow-client
@@ -29,3 +30,8 @@ services:
         value: production
       - key: NEXT_PUBLIC_API_URL
         value: https://stockflow-api.onrender.com/api
+
+databases:
+  - name: stockflow-db
+    region: oregon
+    plan: free

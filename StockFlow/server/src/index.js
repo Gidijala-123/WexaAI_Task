@@ -9,7 +9,7 @@ const settingsRoutes = require('./routes/settings');
 
 const prisma = new PrismaClient();
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 1111;
 const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:3000';
 
 app.use((req, res, next) => {
