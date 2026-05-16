@@ -4,8 +4,8 @@ services:
     env: node
     region: oregon
     plan: free
-    buildCommand: cd server && npm install && npx prisma generate && npx prisma db push
-    startCommand: cd server && npm start
+    buildCommand: cd server && npm install
+    startCommand: cd server && npx prisma generate && npx prisma db push && npm start
     envVars:
       - key: NODE_ENV
         value: production
